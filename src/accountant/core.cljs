@@ -4,6 +4,7 @@
   (:require [cljs.core.async :refer [put! <! chan]]
             [clojure.string :as str]
             [goog.events :as events]
+            [goog.object :as gobj]
             [goog.history.EventType :as EventType])
   (:import goog.history.Event
            goog.history.Html5History
@@ -34,7 +35,11 @@
   [e]
   (let [href (.-href e)
         attrs (.-attributes e)
-        navigation-link? (and href attrs (-> attrs (aget "data-trigger") not))]
+        empty-href? (and attrs (#{"" "#"} (gobj/getValueByKeys attrs "href" "value")))
+        navigation-link? (and href
+                              attrs
+                              (not (or empty-href?
+                                       (-> attrs (aget "data-trigger")))))]
     (if navigation-link?
       e
       (when-let [parent (.-parentNode e)]
